@@ -18,8 +18,7 @@ public class TwilioRegistration {
 
     private static final TwilioRegistration instance = new TwilioRegistration();
 
-    //    private String url = "http://172.104.173.184:3000/accessToken?identity=";
-    private String url = "https://22c3-2409-4041-2d0d-aabd-9da-3fdd-53ac-4826.ngrok.io/accessToken?identity=";
+    private String url = "https://8993-2409-4041-2d0d-aabd-4c18-617e-53e1-87ec.ngrok.io/accessToken?identity=";
 
     public static TwilioRegistration getInstance() {
         return instance;

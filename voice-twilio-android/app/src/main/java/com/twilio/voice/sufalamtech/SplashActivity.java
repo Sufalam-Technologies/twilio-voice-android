@@ -29,7 +29,7 @@ public class SplashActivity extends AppCompatActivity {
         //Here we check if user is already registered or not
         //Also the access token generated from twilio is expired or not
         //If expired we will need re-register user
-        if (accessToken == null || accessToken.getTokenExpiredTime() < new Date().getTime()) {
+        if (accessToken == null || new Date(accessToken.getTokenExpiredTime()).before(new Date())) {
             startActivity(new Intent(this, RegistrationActivity.class));
         } else {
             startActivity(new Intent(this, VoiceActivity.class));

@@ -63,7 +63,7 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private void handleInvite(CallInvite callInvite, int notificationId) {
-        Intent intent = new Intent(MyApplication.getInstance(), IncomingCallNotificationService.class);
+        Intent intent = new Intent(this, IncomingCallNotificationService.class);
         intent.setAction(Constants.ACTION_INCOMING_CALL);
         intent.putExtra(Constants.INCOMING_CALL_NOTIFICATION_ID, notificationId);
         intent.putExtra(Constants.INCOMING_CALL_INVITE, callInvite);
@@ -72,7 +72,7 @@ public class VoiceFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private void handleCanceledCallInvite(CancelledCallInvite cancelledCallInvite) {
-        Intent intent = new Intent(MyApplication.getInstance(), IncomingCallNotificationService.class);
+        Intent intent = new Intent(this, IncomingCallNotificationService.class);
         intent.setAction(Constants.ACTION_CANCEL_CALL);
         intent.putExtra(Constants.CANCELLED_CALL_INVITE, cancelledCallInvite);
 

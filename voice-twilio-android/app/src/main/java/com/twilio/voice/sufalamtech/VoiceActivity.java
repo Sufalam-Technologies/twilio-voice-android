@@ -20,6 +20,7 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -130,32 +131,32 @@ public class VoiceActivity extends AppCompatActivity {
          */
         resetUI();
 
-        /*
-         * Setup audio device management and set the volume control stream
-         */
-        audioSwitch = new AudioSwitch(getApplicationContext());
-        savedVolumeControlStream = getVolumeControlStream();
-        setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
-
-        /** Start the audio device selector after the menu is created and update the icon when the
-         * selected audio device changes.
-         */
-        audioSwitch.start((audioDevices, audioDevice) -> {
-//            Toast.makeText(this, audioDevice.getName(), Toast.LENGTH_SHORT).show();
-            return Unit.INSTANCE;
-        });
-
-        List<AudioDevice> availableAudioDevices = audioSwitch.getAvailableAudioDevices();
-        AudioDevice.Earpiece earphone = null;
-        for (AudioDevice audioDevice : availableAudioDevices) {
-            Log.d(TAG, "Available Audio devices - " + audioDevice.getName());
-            if (audioDevice instanceof AudioDevice.Earpiece) {
-                earphone = (AudioDevice.Earpiece) audioDevice;
-            }
-        }
-
-        audioSwitch.selectDevice(earphone);
-        audioSwitch.activate();
+//        /*
+//         * Setup audio device management and set the volume control stream
+//         */
+//        audioSwitch = new AudioSwitch(getApplicationContext());
+//        savedVolumeControlStream = getVolumeControlStream();
+//        setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+//
+//        /** Start the audio device selector after the menu is created and update the icon when the
+//         * selected audio device changes.
+//         */
+//        audioSwitch.start((audioDevices, audioDevice) -> {
+////            Toast.makeText(this, audioDevice.getName(), Toast.LENGTH_SHORT).show();
+//            return Unit.INSTANCE;
+//        });
+//
+//        List<AudioDevice> availableAudioDevices = audioSwitch.getAvailableAudioDevices();
+//        AudioDevice.Earpiece earphone = null;
+//        for (AudioDevice audioDevice : availableAudioDevices) {
+//            Log.d(TAG, "Available Audio devices - " + audioDevice.getName());
+//            if (audioDevice instanceof AudioDevice.Earpiece) {
+//                earphone = (AudioDevice.Earpiece) audioDevice;
+//            }
+//        }
+//
+//        audioSwitch.selectDevice(earphone);
+//        audioSwitch.activate();
 
         /*
          * Displays a call dialog if the intent contains a call invite
@@ -179,6 +180,13 @@ public class VoiceActivity extends AppCompatActivity {
 
             }
         }
+
+        /*
+         * Setup audio device management and set the volume control stream
+         */
+        audioSwitch = new AudioSwitch(getApplicationContext());
+        savedVolumeControlStream = getVolumeControlStream();
+        setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
     }
 
     @Override
@@ -236,7 +244,7 @@ public class VoiceActivity extends AppCompatActivity {
 
             @Override
             public void onConnected(@NonNull Call call) {
-//                audioSwitch.activate();
+                audioSwitch.activate();
                 if (BuildConfig.playCustomRingback) {
                     SoundPoolManager.getInstance(VoiceActivity.this).stopRinging();
                 }
@@ -336,6 +344,7 @@ public class VoiceActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         registerReceiver();
+        startAudioSwitch();
     }
 
     @Override
@@ -452,7 +461,7 @@ public class VoiceActivity extends AppCompatActivity {
             // Place a call
             EditText contact = ((AlertDialog) dialog).findViewById(R.id.contact);
             params.put("to", contact.getText().toString());
-            params.put("From", PrefHelper.getInstance().getString(PrefHelper.USER_IDENTITY, ""));
+//            params.put("callerId", PrefHelper.getInstance().getString(PrefHelper.USER_IDENTITY, ""));
             ConnectOptions connectOptions = new ConnectOptions.Builder(AccessToken.getInstance().getToken())
                     .params(params)
                     .build();
@@ -525,6 +534,7 @@ public class VoiceActivity extends AppCompatActivity {
         SoundPoolManager.getInstance(this).stopRinging();
         activeCallInvite.accept(this, callListener);
         notificationManager.cancel(activeCallNotificationId);
+        stopService(new Intent(getApplicationContext(), IncomingCallNotificationService.class));
         setCallUI();
         if (alertDialog != null && alertDialog.isShowing()) {
             alertDialog.dismiss();
@@ -641,9 +651,9 @@ public class VoiceActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-//        MenuInflater inflater = getMenuInflater();
-//        inflater.inflate(R.menu.menu, menu);
-//        audioDeviceMenuItem = menu.findItem(R.id.menu_audio_device);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        audioDeviceMenuItem = menu.findItem(R.id.menu_audio_device);
 
         return true;
     }
@@ -702,7 +712,9 @@ public class VoiceActivity extends AppCompatActivity {
             audioDeviceMenuIcon = R.drawable.ic_volume_up_white_24dp;
         }
 
-        audioDeviceMenuItem.setIcon(audioDeviceMenuIcon);
+        if (audioDeviceMenuItem != null) {
+            audioDeviceMenuItem.setIcon(audioDeviceMenuIcon);
+        }
     }
 
     private static AlertDialog createCallDialog(final DialogInterface.OnClickListener callClickListener,

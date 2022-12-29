@@ -8,6 +8,7 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.twilio.voice.RegistrationException;
 import com.twilio.voice.RegistrationListener;
+import com.twilio.voice.UnregistrationListener;
 import com.twilio.voice.Voice;
 import com.twilio.voice.sufalamtech.base.MyApplication;
 import com.twilio.voice.sufalamtech.model.AccessToken;
@@ -18,8 +19,8 @@ public class TwilioRegistration {
 
     private static final TwilioRegistration instance = new TwilioRegistration();
 
-//    private String url = "https://quickstart-7140-dev.twil.io/access-token?identity=";
-    private String url = "https://fc6f-2405-205-c880-449a-4524-7b42-6b6a-b88f.ngrok.io/accessToken?identity=";
+    //    private String url = "https://quickstart-7140-dev.twil.io/access-token?identity=";
+    private String url = "http://172.104.173.184:3000/accessToken?identity=";
 
     public static TwilioRegistration getInstance() {
         return instance;
@@ -78,6 +79,22 @@ public class TwilioRegistration {
         }
     }
 
+    public void unRegister(UnRegisterListener listener) {
+        Voice.unregister(AccessToken.getInstance().getToken(), Voice.RegistrationChannel.FCM,
+                PrefHelper.getInstance().getString(PrefHelper.FCM_TOKEN, ""),
+                new UnregistrationListener() {
+                    @Override
+                    public void onUnregistered(String accessToken, String fcmToken) {
+                        listener.onSuccessOfUnRegistration();
+                    }
+
+                    @Override
+                    public void onError(RegistrationException registrationException, String accessToken, String fcmToken) {
+                        listener.onFailureOfUnRegistration(registrationException.getMessage());
+                    }
+                });
+    }
+
     public interface AccessTokenListener {
 
         void onSuccessToken(String accessToken, String fcmToken);
@@ -90,5 +107,11 @@ public class TwilioRegistration {
         void onSuccessToken(String fcmToken);
 
         void onFailureToken(String error);
+    }
+
+    public interface UnRegisterListener {
+        void onSuccessOfUnRegistration();
+
+        void onFailureOfUnRegistration(String error);
     }
 }

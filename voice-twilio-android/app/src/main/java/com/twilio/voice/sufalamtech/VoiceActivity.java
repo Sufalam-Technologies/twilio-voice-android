@@ -6,6 +6,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -664,7 +665,45 @@ public class VoiceActivity extends AppCompatActivity {
             showAudioDevices();
             return true;
         }
+
+        if (item.getItemId() == R.id.menu_logout) {
+            unRegisterFromTwilio();
+        }
+
         return false;
+    }
+
+    private void unRegisterFromTwilio() {
+        ProgressDialog progressDialog = new ProgressDialog(this);
+        try {
+            progressDialog.setTitle("Logout");
+            progressDialog.setMessage("Logging out...");
+            progressDialog.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        TwilioRegistration.getInstance().unRegister(new TwilioRegistration.UnRegisterListener() {
+            @Override
+            public void onSuccessOfUnRegistration() {
+                try {
+                    progressDialog.dismiss();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                finish();
+                startActivity(new Intent(VoiceActivity.this, RegistrationActivity.class));
+            }
+
+            @Override
+            public void onFailureOfUnRegistration(String error) {
+                try {
+                    progressDialog.dismiss();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Snackbar.make(coordinatorLayout, error, Snackbar.LENGTH_LONG).show();
+            }
+        });
     }
 
     /*
